@@ -1,229 +1,290 @@
+from collections import deque
 import matplotlib.pyplot as plt
-import random
+import matplotlib.patches as patches
 
-class Node:
-    def __init__(self, leaf=False):
+class BpTreeNode:
+    def __init__(self, isLeafNode):
         self.keys = []
         self.children = []
-        self.leaf = leaf
-        self.next_leaf = None
+        self.isLeaf = isLeafNode
 
-class BPlusTree:
-    def __init__(self, degree):
-        self.root = Node(leaf=True)
+class BpTree:
+    def __init__(self, degree=2):
+        self.root = None
         self.degree = degree
 
-    def insert(self, key):
-        if key in self.search(key):
-            return  # Key already exists in the tree
+    def insert(self, value):
+        if self.root is None:
+            self.root = BpTreeNode(True)
+            self.root.keys.append(value)
+        else:
+            if len(self.root.keys) == 2 * self.degree - 1:
+                newRoot = BpTreeNode(False)
+                newRoot.children.append(self.root)
+                self.splitChild(newRoot, 0)
+                self.root = newRoot
+            self.insertNonFull(self.root, value)
 
-        if len(self.root.keys) == (2 * self.degree) - 1:
-            new_root = Node()
-            new_root.children.append(self.root)
-            self._split_child(new_root, 0)
-            self.root = new_root
-
-        self._insert_non_full(self.root, key)
-
-    def _insert_non_full(self, node, key):
+    def insertNonFull(self, node, value):
         index = len(node.keys) - 1
-        if node.leaf:
-            node.keys.append(None)
-            while index >= 0 and key < node.keys[index]:
-                node.keys[index + 1] = node.keys[index]
+
+        if node.isLeaf:
+            while index >= 0 and value < node.keys[index]:
                 index -= 1
-            node.keys[index + 1] = key
+
+            node.keys.insert(index + 1, value)
         else:
-            while index >= 0 and key < node.keys[index]:
+            while index >= 0 and value < node.keys[index]:
                 index -= 1
+
             index += 1
-            if len(node.children[index].keys) == (2 * self.degree) - 1:
-                self._split_child(node, index)
-                if key > node.keys[index]:
+            if len(node.children[index].keys) == 2 * self.degree - 1:
+                self.splitChild(node, index)
+
+                if value > node.keys[index]:
                     index += 1
-            self._insert_non_full(node.children[index], key)
 
-    def _split_child(self, parent, index):
-        degree = self.degree
+            self.insertNonFull(node.children[index], value)
+
+    def splitChild(self, parent, index):
         child = parent.children[index]
-        new_child = Node(leaf=child.leaf)
-        parent.keys.insert(index, child.keys[degree - 1])
-        parent.children.insert(index + 1, new_child)
-
-        new_child.keys = child.keys[degree:]
-        child.keys = child.keys[:degree]
-
-        if not child.leaf:
-            new_child.children = child.children[degree:]
-            child.children = child.children[:degree]
-
-    def delete(self, key):
-        self._delete_key(self.root, key)
-
-    def _delete_key(self, node, key):
-        if not node:
-            return None
-
-        # Find the index of the key to be deleted
-        index = 0
-        while index < len(node.keys) and key > node.keys[index]:
-            index += 1
-
-        if index < len(node.keys) and key == node.keys[index]:
-            # If the node is a leaf, directly delete the key
-            if node.leaf:
-                del node.keys[index]
-            else:
-                # If the node is not a leaf
-                # Case 1: Key exists in this node
-                if node.children[index].leaf:
-                    # Case 1a: Key exists in a leaf node directly under this node
-                    del node.keys[index]
-                else:
-                    # Case 1b: Key exists in a non-leaf node, find the predecessor
-                    predecessor = self._get_predecessor(node, index)
-                    node.keys[index] = predecessor
-                    # Delete the predecessor key from the child node
-                    self._delete_key(node.children[index], predecessor)
-        else:
-            # Key is not in this node, move to the appropriate child node
-            if node.leaf:
-                # Key not found in the tree
-                return None
-            # Determine if the child needs to be merged or redistributed
-            if len(node.children[index].keys) < self.degree:
-                self._borrow_or_merge(node, index)
-            # Recursively delete the key in the appropriate child
-            self._delete_key(node.children[index], key)
-
-    def _get_predecessor(self, node, index):
-        # Find the rightmost key in the subtree to replace the deleted key
-        current_node = node.children[index]
-        while not current_node.leaf:
-            current_node = current_node.children[-1]
-        return current_node.keys[-1]
-
-    def _borrow_or_merge(self, node, index):
-        # Try to borrow a key from left or right sibling
-        if index != 0 and len(node.children[index - 1].keys) >= self.degree:
-            self._borrow_from_left_sibling(node, index)
-        elif index != len(node.keys) and len(node.children[index + 1].keys) >= self.degree:
-            self._borrow_from_right_sibling(node, index)
-        else:
-            # Merge with the right sibling if borrowing isn't possible
-            if index != len(node.keys):
-                self._merge_nodes(node, index)
-            else:
-                self._merge_nodes(node, index - 1)
-
-    def _borrow_from_left_sibling(self, node, index):
-        child = node.children[index]
-        sibling = node.children[index - 1]
-
-        # Move key from the left sibling to current node
-        child.keys.insert(0, node.keys[index - 1])
-        node.keys[index - 1] = sibling.keys.pop()
-
-        # If the child is not a leaf, move child pointer as well
-        if not child.leaf:
-            child.children.insert(0, sibling.children.pop())
-
-    def _borrow_from_right_sibling(self, node, index):
-        child = node.children[index]
-        sibling = node.children[index + 1]
-
-        # Move key from the right sibling to current node
-        child.keys.append(node.keys[index])
-        node.keys[index] = sibling.keys.pop(0)
-
-        # If the child is not a leaf, move child pointer as well
-        if not child.leaf:
-            child.children.append(sibling.children.pop(0))
-
-    def _merge_nodes(self, node, index):
-        child = node.children[index]
-        sibling = node.children[index + 1]
-
-        # Merge sibling into child
-        child.keys.append(node.keys.pop(index))
-        child.keys.extend(sibling.keys)
-
-        # If the child is not a leaf, merge child pointers as well
-        if not child.leaf:
-            child.children.extend(sibling.children)
-
-        # Remove the sibling node from parent
-        node.children.pop(index + 1)
-
-    def search(self, key):
-        return self._search_recursive(self.root, key)
-
-    def _search_recursive(self, node, key):
-        if node is None:
-            return []
-
-        index = 0
-        while index < len(node.keys) and key > node.keys[index]:
-            index += 1
-
-        if index < len(node.keys) and key == node.keys[index]:
-            return [key]
-
-        if node.leaf:
-            return []
-
-        return self._search_recursive(node.children[index], key)
-
-    def print_tree_recursive(self, node=None, level=0):
-        if node is None:
-            node = self.root
-
-        if node is None:
-            return
-
-        # Print the node keys
-        print('  ' * level, node.keys)
-
-        # Print the children recursively
-        if not node.leaf:
-            for child in node.children:
-                self.print_tree_recursive(child, level + 1)
+        newChild = BpTreeNode(child.isLeaf)
         
-    def _plot_tree(self, node, ax, x=0, y=0, level=0):
+        parent.keys.insert(index, child.keys[self.degree - 1])
+
+        parent.children.insert(index + 1, newChild)
+
+        newChild.keys = child.keys[self.degree:]
+        child.keys = child.keys[:self.degree - 1]
+
+        if not child.isLeaf:
+            newChild.children = child.children[self.degree:]
+            child.children = child.children[:self.degree]
+
+    def search(self, value):
+        return self.searchNode(self.root, value) is not None
+
+    def searchNode(self, node, value):
         if node is None:
+            return None
+        i = 0
+        while i < len(node.keys) and value > node.keys[i]:
+            i += 1
+        if i < len(node.keys) and value == node.keys[i]:
+            return node
+        elif node.isLeaf:
+            return None
+        else:
+            return self.searchNode(node.children[i], value)
+
+    def remove(self, value):
+        if self.root is None:
             return
 
-        # Draw the node
-        ax.text(x, y, str(node.keys), ha='center', va='center', bbox=dict(facecolor='white', edgecolor='black'))
+        self.deleteKey(self.root, value)
 
-        # Draw the children recursively
-        if not node.leaf:
-            child_x = x - (len(node.children) * 0.5)
-            child_y = y - 1.5
+        if len(self.root.keys) == 0 and not self.root.isLeaf:
+            newRoot = self.root.children[0]
+            del self.root
+            self.root = newRoot
+
+    def deleteKey(self, node, value):
+        i = 0
+        while i < len(node.keys) and value > node.keys[i]:
+            i += 1
+
+        if i < len(node.keys) and value == node.keys[i]:
+            if node.isLeaf:
+                del node.keys[i]
+            else:
+                self.deleteFromNonLeaf(node, value)
+        else:
+            if node.isLeaf:
+                return
+
+            lastChild = (i == len(node.keys))
+
+            if len(node.children[i].keys) < self.degree:
+                self.fillChild(node, i)
+
+            if lastChild and i > len(node.keys):
+                self.deleteKey(node.children[i - 1], value)
+            else:
+                self.deleteKey(node.children[i], value)
+
+    def deleteFromNonLeaf(self, node, value):
+        i = 0
+        while i < len(node.keys) and value > node.keys[i]:
+            i += 1
+
+        keyValue = node.keys[i]
+
+        if len(node.children[i].keys) >= self.degree:
+            predecessor = self.getPredecessor(node.children[i])
+            node.keys[i] = predecessor
+            self.deleteKey(node.children[i], predecessor)
+        elif len(node.children[i + 1].keys) >= self.degree:
+            successor = self.getSuccessor(node.children[i + 1])
+            node.keys[i] = successor
+            self.deleteKey(node.children[i + 1], successor)
+        else:
+            node.children[i].keys.append(keyValue)
+            node.children[i].keys.extend(node.children[i + 1].keys)
+
+            if not node.children[i].isLeaf:
+                node.children[i].children.extend(node.children[i + 1].children)
+
+            del node.children[i + 1]
+            del node.children[i + 1]
+
+            self.deleteKey(node.children[i], value)
+
+    def getPredecessor(self, node):
+        while not node.isLeaf:
+            node = node.children[-1]
+        return node.keys[-1]
+
+    def getSuccessor(self, node):
+        while not node.isLeaf:
+            node = node.children[0]
+        return node.keys[0]
+
+    def fillChild(self, node, index):
+        if index != 0 and len(node.children[index - 1].keys) >= self.degree:
+            child = node.children[index]
+            sibling = node.children[index - 1]
+
+            child.keys.insert(0, node.keys[index - 1])
+            node.keys[index - 1] = sibling.keys[-1]
+
+            if not child.isLeaf:
+                child.children.insert(0, sibling.children[-1])
+                sibling.children.pop()
+
+            sibling.keys.pop()
+        elif index != len(node.keys) and len(node.children[index + 1].keys) >= self.degree:
+            child = node.children[index]
+            sibling = node.children[index + 1]
+
+            child.keys.append(node.keys[index])
+            node.keys[index] = sibling.keys[0]
+
+            if not child.isLeaf:
+                child.children.append(sibling.children[0])
+                sibling.children.pop(0)
+
+            sibling.keys.pop(0)
+        else:
+            if index != len(node.keys):
+                child = node.children[index]
+                sibling = node.children[index + 1]
+
+                child.keys.append(node.keys[index])
+                child.keys.extend(sibling.keys)
+
+                if not child.isLeaf:
+                    child.children.extend(sibling.children)
+
+                node.keys.pop(index)
+                node.children.pop(index + 1)
+            else:
+                child = node.children[index]
+                sibling = node.children[index - 1]
+
+                sibling.keys.append(node.keys[index - 1])
+                sibling.keys.extend(child.keys)
+
+                if not child.isLeaf:
+                    sibling.children.extend(child.children)
+
+                node.keys.pop(index - 1)
+                node.children.pop(index)
+
+    def maxDegree(self):
+        return self.getMaxDegree(self.root)
+
+    def getMaxDegree(self, node):
+        if node is None:
+            return 0
+
+        maxDegree = len(node.keys)
+
+        if not node.isLeaf:
             for child in node.children:
-                self._plot_tree(child, ax, child_x, child_y, level + 1)
-                child_x += 1
+                maxDegree = max(maxDegree, self.getMaxDegree(child))
 
-                # Draw the edges
-                ax.plot([x, child_x], [y, child_y + 0.5], color='black')
+        return maxDegree
 
-        # Draw the keys
-        for i, key in enumerate(node.keys):
-            ax.text(x + i, y - 0.5, str(key), ha='center', va='center')
+    def printTree(self):
+        self._printTree(self.root)
+        print()
 
-    def visualize_tree(self):
+    def _printTree(self, root):
+        if root is not None:
+            nodesQueue = deque()
+            nodesQueue.append(root)
+
+            while nodesQueue:
+                nodesCount = len(nodesQueue)
+
+                while nodesCount > 0:
+                    currentNode = nodesQueue.popleft()
+
+                    for key in currentNode.keys:
+                        print(key, end=" ")
+
+                    if not currentNode.isLeaf:
+                        for child in currentNode.children:
+                            nodesQueue.append(child)
+
+                    print("|", end=" ")
+
+                    nodesCount -= 1
+
+                print()
+
+    def plotTree(self):
         fig, ax = plt.subplots()
-        self._plot_tree(self.root, ax)
-        ax.axis('off')
+        self.plotNode(ax, self.root, 0, 0, self.maxDegree())
+
+        ax.set_aspect('equal', adjustable='datalim')
+        plt.axis('off')
         plt.show()
 
-if __name__ == '__main__':
-    b_plus_tree = BPlusTree(degree=3)
+    def plotNode(self, ax, node, level, x, max_degree):
+        if node is not None:
+            y = -level * 2  # Adjust the spacing between levels
 
-    for i in range(10):
-        elem = random.randint(0,10000)
-        print(f"Inserting {elem} into the tree...")
-        b_plus_tree.insert(elem)
+            for i, key in enumerate(node.keys):
+                ax.text(x + i, y, str(key), ha='center', va='center', bbox=dict(facecolor='white', edgecolor='black'))
 
-    b_plus_tree.print_tree_recursive()
-    b_plus_tree.visualize_tree()
+            if not node.isLeaf:
+                for i, child in enumerate(node.children):
+                    child_x = x + i * max_degree
+                    self.plotNode(ax, child, level + 1, child_x, max_degree)
+
+                    ax.add_patch(patches.FancyArrow(x + i, y - 0.5, child_x - x - i, 1, color='black', lw=1))
+
+
+if __name__ == "__main__":
+    tree = BpTree()
+
+    # Insert some values
+    for value in [4371, 1323, 6173, 4199, 4344, 9679, 1989]:
+        tree.insert(value)
+
+    # Print the tree
+    print("B+ Tree:")
+    tree.printTree()
+
+    # Delete a value
+    delete_value = 4371
+    tree.remove(delete_value)
+
+    # Print the tree after deletion
+    print("B+ Tree after deletion:")
+    tree.printTree()
+
+    # Get the maximum degree
+    print("Maximum degree of the tree:", tree.maxDegree())
+    tree.plotTree()
