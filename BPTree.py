@@ -2,6 +2,7 @@ from collections import deque
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
+
 class BpTreeNode:
     def __init__(self, isLeafNode):
         self.keys = []
@@ -12,7 +13,7 @@ class BpTree:
     def __init__(self, degree=2):
         self.root = None
         self.degree = degree
-
+        
     def insert(self, value):
         if self.root is None:
             self.root = BpTreeNode(True)
