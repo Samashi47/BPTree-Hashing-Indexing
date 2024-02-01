@@ -1,5 +1,5 @@
 class DoubleHashing:
-    def __init__(self, size=10, load_factor=0.7):
+    def __init__(self, size=10, load_factor=0.75):
         self.hashtablesize = size
         self.load_factor = load_factor
         self.hashtable = [None] * self.hashtablesize
@@ -61,12 +61,3 @@ class DoubleHashing:
     def display(self):
         for i in range(self.hashtablesize):
             print(f"{i}-> {self.hashtable[i]}", end=" ")
-
-
-if __name__ == "__main__":
-    H = DoubleHashing(size=11)
-    
-    for elem in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 1241, 5464, 1242]:
-        H.insert(elem)
-    
-    H.display()

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-class BpTreeNode:
+class Node:
     def __init__(self, isLeafNode):
         self.keys = []
         self.children = []
@@ -16,11 +16,11 @@ class BpTree:
         
     def insert(self, value):
         if self.root is None:
-            self.root = BpTreeNode(True)
+            self.root = Node(True)
             self.root.keys.append(value)
         else:
             if len(self.root.keys) == 2 * self.degree - 1:
-                newRoot = BpTreeNode(False)
+                newRoot = Node(False)
                 newRoot.children.append(self.root)
                 self.splitChild(newRoot, 0)
                 self.root = newRoot
@@ -49,7 +49,7 @@ class BpTree:
 
     def splitChild(self, parent, index):
         child = parent.children[index]
-        newChild = BpTreeNode(child.isLeaf)
+        newChild = Node(child.isLeaf)
         
         parent.keys.insert(index, child.keys[self.degree - 1])
 
@@ -265,27 +265,3 @@ class BpTree:
                     self.plotNode(ax, child, level + 1, child_x, max_degree)
 
                     ax.add_patch(patches.FancyArrow(x + i, y - 0.5, child_x - x - i, 1, color='black', lw=1))
-
-
-if __name__ == "__main__":
-    tree = BpTree()
-
-    # Insert some values
-    for value in [4371, 1323, 6173, 4199, 4344, 9679, 1989]:
-        tree.insert(value)
-
-    # Print the tree
-    print("B+ Tree:")
-    tree.printTree()
-
-    # Delete a value
-    delete_value = 4371
-    tree.remove(delete_value)
-
-    # Print the tree after deletion
-    print("B+ Tree after deletion:")
-    tree.printTree()
-
-    # Get the maximum degree
-    print("Maximum degree of the tree:", tree.maxDegree())
-    tree.plotTree()

@@ -1,8 +1,8 @@
-class MyHashSet:
+class LinProbHashSet:
     def __init__(self, size=11, load_factor=0.75):
-        self.capacity = size + 11
+        self.capacity = size
         self.loadFactorThreshold = load_factor
-        self.size = size
+        self.size = 0
         self.table = [None] * self.capacity
 
     def clear(self):
@@ -24,7 +24,7 @@ class MyHashSet:
         for i in range(len(self.table)):
             self.table[i] = None
 
-    def add(self, e):
+    def insert(self, e):
         if self.contains(e):
             return False
 
@@ -76,7 +76,7 @@ class MyHashSet:
         self.size = 0
 
         for item in lst:
-            self.add(item)
+            self.insert(item)
 
     def set_to_list(self):
         lst = []
@@ -96,13 +96,3 @@ class MyHashSet:
                 builder += str(i) + " -> " + str(lst[i]) + "\n"
 
         return builder
-
-
-if __name__ == "__main__":
-    LinProbHash = MyHashSet(size=11, load_factor=0.75)
-    print('Table size Before Addition: ', LinProbHash.get_size())
-    for elem in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 1241, 5464, 1242, 12342, 12324, 21412, 124124, 7658, 6856,
-                 8578, 23436]:
-        LinProbHash.add(elem)  # Assuming key is the same as the value for simplicity
-    print('Table size After Addition: ', LinProbHash.get_size())
-    print(LinProbHash)
