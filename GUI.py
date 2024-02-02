@@ -51,12 +51,14 @@ class MyTabView(ctk.CTkTabview):
         self.LPkey_entry.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.LPinsert_button = ctk.CTkButton(master=self.LinProb, text="Insert",height=30,command=lambda: self.insert_table('LPH'))
         self.LPinsert_button.grid(row=4, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.LPremove_button = ctk.CTkButton(master=self.LinProb, text="Remove",height=30)
+        self.LPremove_button = ctk.CTkButton(master=self.LinProb, text="Remove",height=30,command=lambda: self.remove_element('LPH'))
         self.LPremove_button.grid(row=5, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.LPcontains_button = ctk.CTkButton(master=self.LinProb, text="Contains",height=30)
         self.LPcontains_button.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.LPremove_all_button = ctk.CTkButton(master=self.LinProb, text="Remove All",height=30)
+        self.LPremove_all_button = ctk.CTkButton(master=self.LinProb, text="Remove All",height=30,command=lambda: self.remove_all('LPH'))
         self.LPremove_all_button.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.LPreset_button = ctk.CTkButton(master=self.LinProb, text="Reset",height=30,command=lambda: self.reset('LPH'))
+        self.LPreset_button.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.LPtable_frame = ctk.CTkScrollableFrame(master=self.LinProb)
         self.LPtable_frame.columnconfigure(0, weight=1)
         self.LPtable_frame.grid(row=0, column=3, columnspan=3, rowspan=8, padx=30, pady=10, sticky='NSEW')
@@ -89,12 +91,14 @@ class MyTabView(ctk.CTkTabview):
         self.DHkey_entry.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.DHinsert_button = ctk.CTkButton(master=self.DHash, text="Insert",height=30,command=lambda: self.insert_table('DH'))
         self.DHinsert_button.grid(row=4, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.DHremove_button = ctk.CTkButton(master=self.DHash, text="Remove",height=30)
+        self.DHremove_button = ctk.CTkButton(master=self.DHash, text="Remove",height=30,command=lambda: self.remove_element('DH'))
         self.DHremove_button.grid(row=5, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.DHcontains_button = ctk.CTkButton(master=self.DHash, text="Contains",height=30)
         self.DHcontains_button.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.DHremove_all_button = ctk.CTkButton(master=self.DHash, text="Remove All",height=30)
+        self.DHremove_all_button = ctk.CTkButton(master=self.DHash, text="Remove All",height=30,command=lambda: self.remove_all('DH'))
         self.DHremove_all_button.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.DHreset_button = ctk.CTkButton(master=self.DHash, text="Reset",height=30,command=lambda: self.reset('DH'))
+        self.DHreset_button.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.DHtable_frame = ctk.CTkScrollableFrame(master=self.DHash)
         self.DHtable_frame.columnconfigure(0, weight=1)
         self.DHtable_frame.grid(row=0, column=3, columnspan=3, rowspan=8, padx=30, pady=10, sticky='NSEW')
@@ -127,12 +131,14 @@ class MyTabView(ctk.CTkTabview):
         self.SCkey_entry.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.SCinsert_button = ctk.CTkButton(master=self.SCHash, text="Insert",height=30,command=lambda: self.insert_table('SC'))
         self.SCinsert_button.grid(row=4, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.SCremove_button = ctk.CTkButton(master=self.SCHash, text="Remove",height=30)
+        self.SCremove_button = ctk.CTkButton(master=self.SCHash, text="Remove",height=30,command=lambda: self.remove_element('SC'))
         self.SCremove_button.grid(row=5, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.SCcontains_button = ctk.CTkButton(master=self.SCHash, text="Contains",height=30)
         self.SCcontains_button.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
-        self.SCremove_all_button = ctk.CTkButton(master=self.SCHash, text="Remove All",height=30)
+        self.SCremove_all_button = ctk.CTkButton(master=self.SCHash, text="Remove All",height=30,command=lambda: self.remove_all('SC'))
         self.SCremove_all_button.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.SCreset_button = ctk.CTkButton(master=self.SCHash, text="Reset",height=30,command=lambda: self.reset('SC'))
+        self.SCreset_button.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
         self.SCtable_frame = ctk.CTkScrollableFrame(master=self.SCHash)
         self.SCtable_frame.columnconfigure(0, weight=1)
         self.SCtable_frame.grid(row=0, column=3, columnspan=3, rowspan=8, padx=30, pady=10, sticky='NSEW')
@@ -185,70 +191,162 @@ class MyTabView(ctk.CTkTabview):
                 tk.messagebox.showerror("Error", "Please enter a valid integer for size")
                 return
             self.SCHTable.bucket_count = size
-    
+
     def updateTable(self, table):
         current_table = None
         hashtype = None
-        if table == 'LPH':
-            self.LPload_factor_button.configure(state='disabled')
-            self.LPsize_button.configure(state='disabled')
+        if table == "LPH":
+            self.LPload_factor_button.configure(state="disabled")
+            self.LPsize_button.configure(state="disabled")
             current_table = self.LPindex_table
             hashtype = self.LPTable.table
             current_table_size = len(current_table.get())
-            current_table.delete_rows(list(range(1,current_table_size)))
+            current_table.delete_rows(list(range(1, current_table_size)))
             for i in range(len(hashtype)):
                 current_table.add_row([i, str(hashtype[i])])
-        if table == 'DH':
-            self.DHload_factor_button.configure(state='disabled')
-            self.DHsize_button.configure(state='disabled')
+        if table == "DH":
+            self.DHload_factor_button.configure(state="disabled")
+            self.DHsize_button.configure(state="disabled")
             current_table = self.DHindex_table
             hashtype = self.DHTable.hashtable
             current_table_size = len(current_table.get())
-            current_table.delete_rows(list(range(1,current_table_size)))
+            current_table.delete_rows(list(range(1, current_table_size)))
             for i in range(len(hashtype)):
-                current_table.add_row([i, hashtype[i]])
-        if table == 'SC':
-            self.SCload_factor_button.configure(state='disabled')
-            self.SCsize_button.configure(state='disabled')
+                current_table.add_row([i, str(hashtype[i])])
+        if table == "SC":
+            self.SCload_factor_button.configure(state="disabled")
+            self.SCsize_button.configure(state="disabled")
             current_table = self.SCindex_table
-            hashtype = [self.SCHTable.get_list(i) for i in range(self.SCHTable.bucket_count)]
+            hashtype = [
+                self.SCHTable.get_list(i) for i in range(self.SCHTable.bucket_count)
+            ]
             current_table_size = len(current_table.get())
-            current_table.delete_rows(list(range(1,current_table_size)))
+            current_table.delete_rows(list(range(1, current_table_size)))
             for i in range(len(hashtype)):
-                if str(self.SCHTable.get_list(i)) == '[]':
-                    current_table.add_row([i, 'None'])
+                if str(self.SCHTable.get_list(i)) == "[]":
+                    current_table.add_row([i, "None"])
                 else:
                     current_table.add_row([i, hashtype[i]])
 
-    
     def insert_table(self, button):
-        if button == 'LPH':
+        if button == "LPH":
             try:
                 key = int(self.LPkey_entry.get())
             except:
                 tk.messagebox.showerror("Error", "Please enter a valid integer for key")
                 return
             self.LPTable.insert(key)
-            self.updateTable('LPH')
-            
-        if button == 'DH':
+            self.updateTable("LPH")
+
+        if button == "DH":
             try:
                 key = int(self.DHkey_entry.get())
             except:
                 tk.messagebox.showerror("Error", "Please enter a valid integer for key")
                 return
             self.DHTable.insert(key)
-            self.updateTable('DH')
-            
-        if button == 'SC':
+            self.updateTable("DH")
+
+        if button == "SC":
             try:
                 key = int(self.SCkey_entry.get())
             except:
                 tk.messagebox.showerror("Error", "Please enter a valid integer for key")
                 return
             self.SCHTable.insert(key)
-            self.updateTable('SC')
+            self.updateTable("SC")
 
+    def remove_element(self, button):
+        exists = None
+        if button == "LPH":
+            try:
+                key = int(self.LPkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            exists = self.LPTable.remove(key)
+            if not exists:
+                tk.messagebox.showerror("Error", "Key does not exist")
+                return
+            self.updateTable("LPH")
+
+        if button == "DH":
+            try:
+                key = int(self.DHkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            exists = self.DHTable.remove(key)
+            if not exists:
+                tk.messagebox.showerror("Error", "Key does not exist")
+                return
+            self.updateTable("DH")
+
+        if button == "SC":
+            try:
+                key = int(self.SCkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            exists = self.SCHTable.delete(key)
+            if not exists:
+                tk.messagebox.showerror("Error", "Key does not exist")
+                return
+            self.updateTable("SC")
+            
+    def remove_all(self, button):
+        if button == "LPH":
+            self.LPTable.remove_entries()
+            self.updateTable("LPH")
+        if button == "DH":
+            self.DHTable.remove_entries()
+            self.updateTable("DH")
+        if button == 'SC':
+            self.SCHTable = sh.HashTable(size=self.SCHTable.bucket_count,load_factor=self.SCHTable.load_factor)
+            self.updateTable('SC')
+            
+    def reset(self, button):
+        if button == "LPH":
+            if self.LPsize_entry.get() == "":
+                    size = 11
+            else:
+                try:
+                    
+                    size = int(self.LPsize_entry.get())
+                except:
+                    tk.messagebox.showerror("Error", "Please enter a valid integer for size")
+                    return
+            self.LPTable = lph.LinProbHashSet(size=size, load_factor=self.LPload_factor_slider.get())
+            self.updateTable("LPH")
+            self.LPload_factor_button.configure(state="normal")
+            self.LPsize_button.configure(state="normal")
+        if button == "DH":
+            if self.DHsize_entry.get() == "":
+                    size = 11
+            else:
+                try:
+                    size = int(self.DHsize_entry.get())
+                except:
+                    tk.messagebox.showerror("Error", "Please enter a valid integer for size")
+                    return
+            self.DHTable = dh.DoubleHashing(size=size, load_factor=self.DHload_factor_slider.get())
+            self.updateTable("DH")
+            self.DHload_factor_button.configure(state="normal")
+            self.DHsize_button.configure(state="normal")
+        if button == "SC":
+            if self.SCsize_entry.get() == "":
+                    size = 11
+            else:
+                try:
+                    size = int(self.SCsize_entry.get())
+                except:
+                    tk.messagebox.showerror("Error", "Please enter a valid integer for size")
+                    return
+            self.SCHTable = sh.HashTable(size=size, load_factor=self.SCload_factor_slider.get())
+            self.updateTable("SC")
+            self.SCload_factor_button.configure(state="normal")
+            self.SCsize_button.configure(state="normal")
+            
 if __name__ == "__main__":        
     app = App()
     app.mainloop()

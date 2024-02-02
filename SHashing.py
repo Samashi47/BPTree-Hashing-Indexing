@@ -86,11 +86,11 @@ class HashTable:
         lst = self.get_list(index)
         if self.find(value, lst):
             lst.remove(value)
-            print("Value deleted")
             self.num_elements -= 1
+            return True
         else:
-            print("Delete unsuccessful: value does not exist")
-
+            return False
+    
     def print_table(self):
         for i in range(self.bucket_count):
             lst = self.get_list(i)

@@ -9,24 +9,24 @@ if __name__ == "__main__":
     for elem in [1, 2, 3]:
         LinProbHash.insert(elem)  # Assuming key is the same as the value for simplicity
     print('Table size After Addition: ', LinProbHash.get_size())
-    print(LinProbHash.table)
+    LinProbHash.remove(2)
     print(LinProbHash)
     
 if __name__ == "__main__":
-    H = sh.HashTable(size=11,load_factor=0.75)
+    Ha = sh.HashTable(size=11,load_factor=0.75)
 
     for elem in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 4343, 9678, 1988, 41455, 1626, 3478, 60798]:
-        H.insert(elem)
-    H.find_handler(133223)
-    for i in range(H.bucket_count):
-        print(H.get_list(i))
+        Ha.insert(elem)
+    Ha.remove_elements()
+    Ha.find_handler(133223)
+    Ha.print_table()
 
 if __name__ == "__main__":
     H = dh.DoubleHashing(size=11)
     
     for elem in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 1241, 5464, 1242]:
         H.insert(elem)
-    
+    H.remove(4344)
     H.display()
     
 if __name__ == "__main__":

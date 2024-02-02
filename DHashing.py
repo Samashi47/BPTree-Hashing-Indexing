@@ -58,6 +58,30 @@ class DoubleHashing:
             j += 1
         return True
 
+    def remove_entries(self):
+        for i in range(self.hashtablesize):
+            self.hashtable[i] = None
+
+    def remove(self, e):
+        if not self.search(e):
+            return False
+
+        k = self.h(e)
+        j = 1
+        i = k
+
+        while self.hashtable[i] is not None and self.hashtable[i] != e:
+            i = abs((k + j * self.h2(k)) % len(self.hashtable))
+            j += 1
+
+        if self.hashtable[i] is not None and self.hashtable[i] == e:
+            # A special marker Entry(null, null) is placed for the deleted
+            # entry
+            self.hashtable[i] = None
+
+        self.num_elements -= 1  # Decrease size
+        return True
+    
     def display(self):
         for i in range(self.hashtablesize):
             print(f"{i}-> {self.hashtable[i]}", end=" ")

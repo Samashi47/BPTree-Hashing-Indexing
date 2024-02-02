@@ -50,7 +50,7 @@ class LinProbHashSet:
             i = (i + 1) % len(self.table)
 
         if self.table[i] is not None and self.table[i] == e:
-            self.table[i] = 'X'
+            self.table[i] = None
 
         self.size -= 1
         return True
