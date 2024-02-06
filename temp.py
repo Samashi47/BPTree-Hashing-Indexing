@@ -17,7 +17,6 @@ if __name__ == "__main__":
 
     for elem in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 4343, 9678, 1988, 41455, 1626, 3478, 60798]:
         Ha.insert(elem)
-    Ha.remove_elements()
     Ha.find_handler(133223)
     Ha.print_table()
 
@@ -30,24 +29,10 @@ if __name__ == "__main__":
     H.display()
     
 if __name__ == "__main__":
-    tree = bpt.BpTree()
+    tree = bpt.BpTree(degree=3)
 
     # Insert some values
-    for value in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 4343, 9678, 1988, 41455, 1626, 3478, 60798]:
+    for value in [4371, 1323, 6173, 4199, 4344, 9679, 1989, 4343, 9678, 1988, 41455, 1626, 3478, 60798, 321, 5246, 8585, 0, 468]: # 4371, 1323, 6173, 4199, 4344, 9679, 1989, 4343, 9678, 1988, 41455, 1626, 3478, 60798, 321, 5246, 8585, 0, 468
         tree.insert(value)
-
-    # Print the tree
-    print("B+ Tree:")
-    tree.printTree()
-
-    # Delete a value
-    delete_value = 4371
-    tree.remove(delete_value)
-
-    # Print the tree after deletion
-    print("B+ Tree after deletion:")
-    tree.printTree()
-
-    # Get the maximum degree
-    print("Maximum degree of the tree:", tree.maxDegree())
+    
     tree.plotTree()

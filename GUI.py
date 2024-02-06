@@ -1,10 +1,18 @@
 import customtkinter as ctk
 import tkinter as tk
 from CTkTable import *
+from mpl_interactions import panhandler, zoom_factory
+from PIL import Image
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import numpy as np
+import matplotlib.pyplot as plt
 import LinearProbingHashing as lph
 import SHashing as sh
 import DHashing as dh
 import BPTree as bpt
+import ctypes
+import platform
+import os
 
 
 class MyTabView(ctk.CTkTabview):
@@ -13,14 +21,14 @@ class MyTabView(ctk.CTkTabview):
         self.LPTable = lph.LinProbHashSet(size=11, load_factor=0.75)
         self.DHTable = dh.DoubleHashing(size=11, load_factor=0.75)
         self.SCHTable = sh.HashTable(size=11, load_factor=0.75)
-        self.BPTree = bpt.BpTree(degree=2)
+        self.BPTree = bpt.BpTree(degree=3)
         
         ########################## Linear Probing Hashing ##########################
         
         self.LinProb = self.add("Linear Probing Hashing")
         self.LinProb.columnconfigure((0,1,2), weight=0)
         self.LinProb.columnconfigure(3, weight=1)
-        self.LPH_label = ctk.CTkLabel(master=self.LinProb, text="Linear Probing Hashing:    ", font=("Arial", 25, "bold"))
+        self.LPH_label = ctk.CTkLabel(master=self.LinProb, text="Linear Probing Hashing     ", font=("Arial", 25, "bold"))
         self.LPH_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='NSEW')
         self.LPload_factor_label = ctk.CTkLabel(master=self.LinProb, text="Load Factor: ", font=("Arial", 20, "bold"))
         self.LPload_factor_label.grid(row=1, column=0, padx=20, pady=10, sticky='W')
@@ -56,7 +64,7 @@ class MyTabView(ctk.CTkTabview):
         self.DHash = self.add("Double Hashing")
         self.DHash.columnconfigure((0,1,2), weight=0)
         self.DHash.columnconfigure(3, weight=1) 
-        self.DH_label = ctk.CTkLabel(master=self.DHash, text="Double Hashing:            ", font=("Arial", 25, "bold"))
+        self.DH_label = ctk.CTkLabel(master=self.DHash, text="Double Hashing             ", font=("Arial", 25, "bold"))
         self.DH_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='NSEW')
         self.DHload_factor_label = ctk.CTkLabel(master=self.DHash, text="Load Factor: ", font=("Arial", 20, "bold"))
         self.DHload_factor_label.grid(row=1, column=0, padx=20, pady=10, sticky='W')
@@ -92,7 +100,7 @@ class MyTabView(ctk.CTkTabview):
         self.SCHash = self.add("Separate Chaining Hashing")
         self.SCHash.columnconfigure((0,1,2), weight=0)
         self.SCHash.columnconfigure(3, weight=1) 
-        self.SC_label = ctk.CTkLabel(master=self.SCHash, text="Separate Chaining Hashing: ", font=("Arial", 25, "bold"))
+        self.SC_label = ctk.CTkLabel(master=self.SCHash, text="Separate Chaining Hashing ", font=("Arial", 25, "bold"))
         self.SC_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='NSEW')
         self.SCload_factor_label = ctk.CTkLabel(master=self.SCHash, text="Load Factor: ", font=("Arial", 20, "bold"))
         self.SCload_factor_label.grid(row=1, column=0, padx=20, pady=10, sticky='W')
@@ -126,7 +134,35 @@ class MyTabView(ctk.CTkTabview):
         ########################## B+ Tree ##########################
         
         self.BPtree = self.add("B+ Tree")
-        
+        self.BPtree.columnconfigure((0,1,2), weight=0)
+        self.BPtree.columnconfigure((3), weight=1) 
+        self.BP_label = ctk.CTkLabel(master=self.BPtree, text="B+ Trees", font=("Arial", 25, "bold"))
+        self.BP_label.grid(row=0, column=0, columnspan=4, padx=10, pady=10, sticky='NSEW')
+        self.BP_degree_label = ctk.CTkLabel(master=self.BPtree, text="Degree: ", font=("Arial", 20, "bold"))
+        self.BP_degree_label.grid(row=1, column=0, padx=20, pady=10, sticky='W')
+        self.BP_degree_slider = ctk.CTkSlider(master=self.BPtree, from_=3, to=7, number_of_steps=4, width=130, height=10, command=self.slidingBP)
+        self.BP_degree_slider.grid(row=1, column=1, columnspan=2, padx=20, pady=10, sticky='W')
+        self.BP_degree_slider.set(3)
+        self.BP_degree_slider_prog_label = ctk.CTkLabel(master=self.BPtree, text="3", font=("Arial", 12))
+        self.BP_degree_slider_prog_label.grid(row=1, column=2, padx=10, pady=10, sticky='E')
+        self.BPreset_button = ctk.CTkButton(master=self.BPtree, text="Create Tree",height=30,command=lambda: self.reset('BP')) # self.reset('BP')
+        self.BPreset_button.grid(row=2, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPkey_entry = ctk.CTkEntry(master=self.BPtree,placeholder_text="Key (Integer)",height=30)
+        self.BPkey_entry.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPinsert_button = ctk.CTkButton(master=self.BPtree, text="Insert",height=30,command=lambda: self.insert_table('BP'))
+        self.BPinsert_button.grid(row=4, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPremove_button = ctk.CTkButton(master=self.BPtree, text="Remove",height=30,command=lambda: self.remove_element('BP'))
+        self.BPremove_button.grid(row=5, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPcontains_button = ctk.CTkButton(master=self.BPtree, text="Contains",height=30,command=lambda: self.contains('BP'))
+        self.BPcontains_button.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPremove_all_button = ctk.CTkButton(master=self.BPtree, text="Remove All",height=30,command=lambda: self.remove_all('BP'))
+        self.BPremove_all_button.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='EW')
+        self.BPgraph_frame = ctk.CTkFrame(master=self.BPtree, fg_color='white',corner_radius=10)
+        self.BPgraph_frame.columnconfigure(0, weight=1)
+        self.BPgraph_frame.grid(row=1, column=3, columnspan=3, rowspan=8, padx=30, pady=10, sticky='NSEW')
+        self.figure = plt.figure(figsize=(5, 6),facecolor='white')
+        self.canvas = FigureCanvasTkAgg(self.figure, self.BPgraph_frame)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, self.BPgraph_frame)
         
     def slidingLPH(self, value):
         self.LPload_factor_slider_prog_label.configure(text=round(value,2))
@@ -134,6 +170,8 @@ class MyTabView(ctk.CTkTabview):
         self.DHload_factor_slider_prog_label.configure(text=round(value,2))
     def slidingSC(self, value):
         self.SCload_factor_slider_prog_label.configure(text=round(value,2))
+    def slidingBP(self, value):
+        self.BP_degree_slider_prog_label.configure(text=int(value))
 
 
     def updateTable(self, table):
@@ -165,7 +203,40 @@ class MyTabView(ctk.CTkTabview):
                     current_table.add_row([i, "None"])
                 else:
                     current_table.add_row([i, hashtype[i]])
+        if table == "BP":
+            current_table = self.BPgraph_frame
+            self.BPTree.plotTree()
+            self.plotTree()
 
+    def plotTree(self):
+        for children in self.BPgraph_frame.winfo_children():
+            children.destroy()
+        
+        tmpImg = Image.open(os.path.join(os.environ['TEMP'], 'bptree', 'bptree_graph.png'))
+        imgArray = np.asarray(tmpImg)
+
+        with plt.ioff():
+            self.figure = plt.figure(figsize=(5, 6))
+            self.a = self.figure.add_subplot(111)
+            self.figure.tight_layout()
+
+        self.a.imshow(imgArray)
+        self.a.axis('off') 
+        self.figure.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
+        imgplot = plt.imshow(imgArray)
+        self.a.set_aspect('equal', 'datalim')
+        self.a.set_ylim(self.a.get_xlim()[::-1])
+        disconnect_zoom = zoom_factory(self.a)
+        pan_handler = panhandler(self.figure)
+        
+        self.treeCanvas = FigureCanvasTkAgg(self.figure, self.BPgraph_frame)
+        self.treeCanvas.draw()
+        self.treeCanvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        # create the toolbar
+        self.toolbar = NavigationToolbar2Tk(self.treeCanvas, self.BPgraph_frame)
+        self.toolbar.update()
+        plt.close()
+        
     def insert_table(self, button):
         if button == "LPH":
             try:
@@ -193,6 +264,14 @@ class MyTabView(ctk.CTkTabview):
                 return
             self.SCHTable.insert(key)
             self.updateTable("SC")
+        if button == "BP":
+            try:
+                key = int(self.BPkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            self.BPTree.insert(key)
+            self.updateTable("BP")
 
     def remove_element(self, button):
         exists = None
@@ -232,6 +311,18 @@ class MyTabView(ctk.CTkTabview):
                 return
             self.updateTable("SC")
             
+        if button == "BP":
+            try:
+                key = int(self.BPkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            exists = self.BPTree.remove(key)
+            if not exists:
+                tk.messagebox.showerror("Error", "Key does not exist")
+                return
+            self.updateTable("BP")
+            
     def remove_all(self, button):
         if button == "LPH":
             self.LPTable.remove_entries()
@@ -242,6 +333,9 @@ class MyTabView(ctk.CTkTabview):
         if button == 'SC':
             self.SCHTable = sh.HashTable(size=self.SCHTable.bucket_count,load_factor=self.SCHTable.load_factor)
             self.updateTable('SC')
+        if button == 'BP':
+            self.BPTree = bpt.BpTree(degree=self.BPTree.degree)
+            self.updateTable("BP")
             
     def reset(self, button):
         if button == "LPH":
@@ -278,6 +372,9 @@ class MyTabView(ctk.CTkTabview):
                     return
             self.SCHTable = sh.HashTable(size=size, load_factor=self.SCload_factor_slider.get())
             self.updateTable("SC")
+        if button == "BP":
+            self.BPTree = bpt.BpTree(degree=int(self.BP_degree_slider.get()))
+            self.updateTable("BP")
             
     def contains(self, button):
         if button == "LPH":
@@ -313,12 +410,27 @@ class MyTabView(ctk.CTkTabview):
                 tk.messagebox.showinfo("Contains", f"{key} exists in the table")
             else:
                 tk.messagebox.showinfo("Contains", f"{key} does not exist in the table")
+        if button == "BP":
+            try:
+                key = int(self.BPkey_entry.get())
+            except:
+                tk.messagebox.showerror("Error", "Please enter a valid integer for key")
+                return
+            exists = self.BPTree.contains(key)
+            if exists:
+                tk.messagebox.showinfo("Contains", f"{key} exists in the tree")
+            else:
+                tk.messagebox.showinfo("Contains", f"{key} does not exist in the tree")
             
 class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.title("Indexing Master")
         self.geometry(f"{1300}x{720}")
+        self.iconbitmap("Indexing-Master.ico")
+        self.myappid = 'heh' # arbitrary string
+        if platform.system() == "Windows":
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(self.myappid)
         self.tab_view = MyTabView(master=self)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -326,4 +438,5 @@ class App(ctk.CTk):
         
 if __name__ == "__main__":        
     app = App()
+    app.protocol("WM_DELETE_WINDOW", app.quit)
     app.mainloop()
