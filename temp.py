@@ -1,7 +1,7 @@
-import LinearProbingHashing as lph
-import SHashing as sh
-import DHashing as dh
-import BPTree as bpt
+import Algorithms.LinearProbingHashing as lph
+import Algorithms.SHashing as sh
+import Algorithms.DHashing as dh
+import Algorithms.BPTree as bpt
 
 if __name__ == "__main__":
     LinProbHash = lph.LinProbHashSet(size=11, load_factor=0.75)

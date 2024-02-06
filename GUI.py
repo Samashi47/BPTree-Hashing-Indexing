@@ -6,10 +6,10 @@ from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import numpy as np
 import matplotlib.pyplot as plt
-import LinearProbingHashing as lph
-import SHashing as sh
-import DHashing as dh
-import BPTree as bpt
+import Algorithms.LinearProbingHashing as lph
+import Algorithms.SHashing as sh
+import Algorithms.DHashing as dh
+import Algorithms.BPTree as bpt
 import ctypes
 import platform
 import os
@@ -427,7 +427,7 @@ class App(ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.title("Indexing Master")
         self.geometry(f"{1300}x{720}")
-        self.iconbitmap("Indexing-Master.ico")
+        self.iconbitmap(os.path.join("Icon","Indexing-Master.ico"))
         self.myappid = 'heh' # arbitrary string
         if platform.system() == "Windows":
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(self.myappid)
