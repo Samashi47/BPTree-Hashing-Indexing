@@ -11,8 +11,8 @@ This repository contains an indexing project that implements various hashing alg
 
 ### Trees Algorithms
 
-- [x]  **B+ Tree**
-- [ ]  **B+ Tree**
+- [x]  **B+ Trees**
+- [ ]  **AVL Trees**
 
 
 ## To Run
